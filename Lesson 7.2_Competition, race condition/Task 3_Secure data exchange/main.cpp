@@ -11,11 +11,10 @@ public:
 
 // lock
 void swap_with_lock(Data& data1, Data& data2) {
-    data1.mutex.lock();
-    data2.mutex.lock();
-    std::swap(data1.value, data2.value);
-    data1.mutex.unlock();
-    data2.mutex.unlock();
+    std::lock(data1.mutex, data2.mutex);
+    std::lock_guard lg1(data1.mutex, std::adopt_lock);
+    std::lock_guard lg2(data2.mutex, std::adopt_lock);
+    std::swap(data1.value, data2.value);    
 }
 
 // scoped_lock
@@ -26,8 +25,9 @@ void swap_with_scoped_lock(Data& data1, Data& data2) {
 
 // unique_lock
 void swap_with_unique_lock(Data& data1, Data& data2) {
-    std::unique_lock lock1(data1.mutex);
-    std::unique_lock lock2(data2.mutex);
+    std::unique_lock lock1(data1.mutex, std::defer_lock);
+    std::unique_lock lock2(data2.mutex, std::defer_lock);
+    std::lock(lock1, lock2);
     std::swap(data1.value, data2.value);
 }
 
